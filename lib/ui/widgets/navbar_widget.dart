@@ -1,13 +1,20 @@
 import 'package:dipterv/bloc/authentication/auth_cubit.dart';
 import 'package:dipterv/services/constans.dart';
+import 'package:dipterv/ui/pages/calendar/calendar_page.dart';
+import 'package:dipterv/ui/pages/customers_page.dart';
 import 'package:dipterv/ui/pages/login_page.dart';
+import 'package:dipterv/ui/pages/real_estate_page.dart';
 import 'package:dipterv/ui/widgets/exit_dialog.dart';
+import 'package:dipterv/ui/widgets/navbar_list_tile_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../styles/custom_colors.dart';
 
 class NavBarWidget extends StatelessWidget {
+  String currentPage;
+
+  NavBarWidget({required this.currentPage});
 
   @override
   Widget build(BuildContext context) {
@@ -21,54 +28,45 @@ class NavBarWidget extends StatelessWidget {
             accountName: Text(state.userModel.name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),),
             accountEmail: Text(state.userModel.email),
             currentAccountPicture: CircleAvatar(
-              child: ClipOval(
-                  child: Image.network("${filePath}${state.userModel.collectionId}/${state.userModel.id}/${state.userModel.avatar}",
-                    fit: BoxFit.cover,
-                  )
-              ),
+              backgroundImage: NetworkImage("${filePath}${state.userModel.collectionId}/${state.userModel.id}/${state.userModel.avatar}"),
             ),
-            decoration: BoxDecoration(
-                color: Colors.blueAccent
+            decoration: const BoxDecoration(
+                color: Colors.blue
             ),
           ),
-          ListTile(
-            leading: const Icon(Icons.mail_outline),
-            title: const Text("Mails"),
-            onTap: () {},
-          ),
-          ListTile(
-            leading: const Icon(Icons.house_outlined),
-            title: const Text("Real estates"),
-            onTap: () {},
-          ),
-          ListTile(
-            leading: const Icon(Icons.man_2_outlined),
-            title: const Text("Customers"),
-            onTap: () {},
-          ),
-          ListTile(
-            leading: const Icon(Icons.calendar_month_outlined),
-            title: const Text("Calendar"),
-            onTap: () {},
-          ),
-          Divider(color: Colors.blueAccent,),
+          NavBarListTileWidget(
+              currentPage: currentPage,
+              title: "Real estates",
+              icon: Icons.house_outlined,
+              direction: RealEstatePage(),),
+          NavBarListTileWidget(
+              currentPage: currentPage,
+              title: "Customers",
+              icon: Icons.man_2_outlined,
+              direction: CustomersPage(),),
+          NavBarListTileWidget(
+              currentPage: currentPage,
+              title: "Calendar",
+              icon: Icons.calendar_month_outlined,
+              direction: CalendarPage(),),
+          const Divider(color: Colors.blueAccent,),
           ListTile(
             leading: Icon(Icons.logout, color: CustomColor.mainColor),
             title: const Text("Log out"),
             onTap: () async {
               showDialog(context: context,
                   builder: (context) => AlertDialog(
-                    title: Text("Are you sure you want to log out?"),
+                    title: const Text("Are you sure you want to log out?"),
                     actions: [
                       TextButton(
                           onPressed: () {Navigator.pop(context, false);},
-                          child: Text("No")),
+                          child: const Text("No")),
                       TextButton(
                           onPressed: () {
                             context.read<AuthCubit>().logoutUser();
                             Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => LoginPage()), (route) => false);
                             },
-                          child: Text("Yes")),
+                          child: const Text("Yes")),
                     ],
                   ));
             },

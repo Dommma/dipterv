@@ -13,41 +13,58 @@ class AuthCubit extends Cubit<AuthState> {
   void changePasswordView() {
     var state = this.state;
     if(state is AuthInitialState) {
-      emit(AuthInitialState(isPasswordViewActive: !state.isPasswordViewActive, emailText: state.emailText, passwordText: state.passwordText));
+      emit(state.copywith(isPasswordViewActive: !state.isPasswordViewActive));
     }
   }
 
-  void changePasswordText(String newPasswordText) {
-    var state = this.state;
-    if(state is AuthInitialState) {
-      emit(AuthInitialState(passwordText: newPasswordText, emailText: state.emailText, isPasswordViewActive: state.isPasswordViewActive));
-    }
-  }
-  void changeUserText(String newUserText) {
-    var state = this.state;
-    if(state is AuthInitialState) {
-      emit(AuthInitialState(emailText: newUserText, passwordText: state.passwordText, isPasswordViewActive: state.isPasswordViewActive));
-    }
-  }
-
-
-  void loginUser(String userName, String password) async {
+  void loginUser() async {
     var state = this.state;
     emit(AuthLoadingState());
     try {
-      await pocketBase.collection('users').authWithPassword(userName, password);
+      if(state is AuthInitialState) {
+        if(state.emailController.text.isEmpty || state.passwordController.text.isEmpty) {
+          emit(AuthErrorState(errorMessage: "Don't leave the input fields empty!"));
+          emit(AuthInitialState(isPasswordViewActive: true, emailController: state.emailController));
+          return;
+        }
+        await pocketBase.collection('users').authWithPassword(state.emailController.text, state.passwordController.text);
+      }
       final record = await pocketBase.collection('users').getOne(pocketBase.authStore.model.id);
       final UserModel currentUser = UserModel.fromJson(record.toJson());
       emit(AuthLoggedInState(userModel: currentUser));
     } on Exception catch (e) {
       emit(AuthErrorState(errorMessage: "Bad email, username or password"));
       if(state is AuthInitialState) {
-        emit(AuthInitialState(isPasswordViewActive: true, emailText: state.emailText));
+        emit(AuthInitialState(isPasswordViewActive: true, emailController: state.emailController));
       }
     }
   }
 
+  void nameChanged() {
+    var state = this.state;
+    if(state is AuthInitialState) {
+      TextEditingController tec = state.emailController;
+      tec.selection =
+          TextSelection.collapsed(offset: tec.text.length);
+      emit(state.copywith(emailController: tec));
+    }
+  }
+
+  void passwordChanged() {
+    var state = this.state;
+    if(state is AuthInitialState) {
+      TextEditingController tec = state.passwordController;
+      tec.selection =
+          TextSelection.collapsed(offset: tec.text.length);
+      emit(state.copywith(passwordController: tec));
+    }
+  }
+
   void logoutUser() {
-    emit(AuthInitialState(isPasswordViewActive: true));
+    var state = this.state;
+    if(state is AuthLoggedInState) {
+      emit(AuthInitialState(isPasswordViewActive: true, emailController: TextEditingController(text: state.userModel.email)));
+      pocketBase.authStore.clear();
+    }
   }
 }

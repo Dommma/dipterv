@@ -5,16 +5,24 @@ abstract class AuthState extends Equatable {}
 
 class AuthInitialState extends AuthState {
   final bool isPasswordViewActive;
-  final String emailText;
-  final String passwordText;
+  final TextEditingController emailController;
+  final TextEditingController passwordController;
 
-  AuthInitialState({isPasswordViewActive, emailText, passwordText})
+  AuthInitialState({isPasswordViewActive, emailController, passwordController})
   : isPasswordViewActive = isPasswordViewActive ?? true,
-  emailText = emailText ?? "",
-  passwordText = passwordText ?? "";
+        emailController = emailController ?? TextEditingController(),
+        passwordController = passwordController ?? TextEditingController();
+
+  AuthInitialState copywith({isPasswordViewActive, emailController, passwordController}) {
+    return AuthInitialState(
+      isPasswordViewActive: isPasswordViewActive ?? this.isPasswordViewActive,
+        emailController: emailController ?? this.emailController,
+        passwordController: passwordController ?? this.passwordController
+    );
+  }
 
   @override
-  List<Object?> get props => [isPasswordViewActive, emailText, passwordText];
+  List<Object?> get props => [isPasswordViewActive, emailController, passwordController];
 }
 
 class AuthLoadingState extends AuthState {
