@@ -1,15 +1,41 @@
-import 'package:json_annotation/json_annotation.dart';
-
-part 'event_model.g.dart';
-
-@JsonSerializable()
 class EventModel {
-  String id, name, description, type;
-  DateTime date;
+  String title, creator, description;
+  DateTime dateTime;
+  String? _id;
 
-  EventModel({required this.id, required this.name, required this.description, required this.type, required this.date});
+  String? get id => _id;
 
-  factory EventModel.fromJson(Map<String, dynamic> json) => _$EventModelFromJson(json);
+  EventModel(this.title, this.dateTime, this.description, this.creator, this._id);
 
-  Map<String, dynamic> toJson() => _$EventModelToJson(this);
+  factory EventModel.fromJson(Map<String, dynamic> json) {
+    final id = json['_id'];
+    final title = json['title'];
+    final year = json['year'];
+    final month = json['month'];
+    final day = json['day'];
+    final hour = json['hour'];
+    final minute = json['minute'];
+    final description = json['description'];
+    final creator = json['_creator'];
+    final dateT = DateTime(year, month, day, hour, minute);
+    return EventModel(title, dateT, description, creator, id);
+  }
+  Map<String, dynamic> toJson() {
+    final year = dateTime.year;
+    final month = dateTime.month;
+    final day = dateTime.day;
+    final hour = dateTime.hour;
+    final minute = dateTime.minute;
+    return <String, dynamic>{
+      'title': this.title,
+      'year': year,
+      'month': month,
+      'day': day,
+      'hour': hour,
+      'minute': minute,
+      'description': this.description,
+      'creator' : this.creator
+    };
+  }
+
 }

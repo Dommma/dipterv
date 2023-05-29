@@ -1,12 +1,13 @@
-import 'package:dipterv/bloc/authentication/auth_cubit.dart';
-import 'package:dipterv/bloc/calendar/calendar_cubit.dart';
-import 'package:dipterv/bloc/event/event_cubit.dart';
-import 'package:dipterv/ui/pages/login_page.dart';
-import 'package:dipterv/ui/widgets/navbar_widget.dart';
+import 'package:dipterv/core/locator.dart';
+import 'package:dipterv/route/login/login_bloc.dart';
+import 'package:dipterv/route/login/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() {
+Future main() async {
+  await loadEnvironment();
+  setupLocator();
   runApp(const MyApp());
 }
 
@@ -15,19 +16,21 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider<AuthCubit>(create: (context) => AuthCubit(),),
-        BlocProvider<CalendarCubit>(create: (context) => CalendarCubit(),),
-        BlocProvider<EventCubit>(create: (context) => EventCubit(),)
-      ],
-      child: MaterialApp(
+
+    return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'Dipterv',
           theme: ThemeData(
             primarySwatch: Colors.blue,
           ),
-          home: LoginPage()),
+          home: BlocProvider(
+    create: (context) => LoginBloc()..add(LoginInitEvent()),
+    child: LoginPage()),
     );
   }
+
+}
+
+Future<void> loadEnvironment() async {
+  await dotenv.load(fileName: ".env");
 }
